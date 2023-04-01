@@ -7,7 +7,7 @@ const dotenv  = require("dotenv");
 dotenv.config();
 const {authenticate} = require('@google-cloud/local-auth');
 // const authenticate = require() '@google-cloud/local-auth';
-const google = require('googleapis');
+const {google} = require('googleapis');
 const {fs} = require('fs');
 const path = require('path');
 const process = require('process');
@@ -58,6 +58,8 @@ async function saveCredentials(client) {
     client_secret: key.client_secret,
     refresh_token: client.credentials.refresh_token,
   });
+
+  console.log(payload)
   await fs.writeFile(TOKEN_PATH, payload);
 }
 
@@ -91,7 +93,8 @@ async function updateReferenceTimes(auth, reference_times) {
   //   spreadsheetId: '1xnZqtEngQ260oMUemdz-iJ1c1iPS0q6hR0UkZdI3_jo',
   //   range: 'Reference Times!A2:N',
   // });
-  let tracks = await reference_times.keys();
+  console.log(await reference_times)
+  let tracks = Object.keys(await reference_times);
   const values = await Promise.all(tracks.map(async track => {
     let data = await reference_times[track];
     let row = [
@@ -117,7 +120,7 @@ async function updateReferenceTimes(auth, reference_times) {
     values,
   };
   try {
-    const result = await service.spreadsheets.values.update({
+    const result = await sheets.spreadsheets.values.update({
       "spreadsheetId": spreadsheetId,
       "range": 'Reference Times!A2:N23',
       "resource": resource,
@@ -278,7 +281,7 @@ app.get("/price", async (req, res) => {
     leaderboards[season6tracks[i]] = track_leaderboards[i]
   }
   results['Leaderboard Times'] = leaderboards;
-  authorize().then(updateReferenceTimes(reftimes)).catch(console.error);
+  authorize().then(await updateReferenceTimes(this.auth, results['Reference Times'])).catch(console.error);
   // elements.forEach(async element => {
   //   const text = await (await element.getProperty("innerText")).jsonValue();
   //   console.log(await text);

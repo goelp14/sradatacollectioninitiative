@@ -292,6 +292,6 @@ app.get("/price", async (req, res) => {
   res.send(results);
 });
 
-app.listen(port || 8080, () => {
+app.listen(process.env.PORT || port, () => {
   console.log(`Example app listening at https://sradatacollectioninitiative.herokuapp.com:${port}`);
 });

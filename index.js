@@ -134,22 +134,24 @@ async function updateReferenceTimes(auth, reference_times) {
   }
 }
 
-
-async function configureTheBrowser(track) {
-  let learderboardurl = `https://www.simracingalliance.com/leaderboards/hot_lap/${track}/?season=6`
-  console.log(learderboardurl);
+async function launchBrowser() {
   const browser = await puppeteer.launch({
     args: ["--no-sandbox", "--disable-setuid-sandbox"]
   });
+  return browser;
+}
+
+async function configureTheBrowser(browser, track) {
+  let learderboardurl = `https://www.simracingalliance.com/leaderboards/hot_lap/${track}/?season=6`
+  console.log(learderboardurl);
   const page = await browser.newPage();
   await page.goto(learderboardurl, { waitUntil: "load", timeout: 0});
   return page;
 }
 
-async function referenceLapTimes() {
+async function referenceLapTimes(browser) {
   let reftime = 'https://www.simracingalliance.com/about/reference_lap_times'
   console.log(reftime);
-  const browser = await puppeteer.launch();
   const page = await browser.newPage();
   await page.goto(reftime, { waitUntil: "load", timeout: 0});
   return page;
@@ -266,15 +268,17 @@ async function getreftimes(page) {
 
 app.get("/price", async (req, res) => {
   let season6tracks = ['Barcelona', 'Brands_Hatch', 'Imola/wet', 'Misano', 'Mount_Panorama', 'Oulton_Park', 'Silverstone/wet', 'Zolder'];
+  browser = launchBrowser();
   const track_leaderboards = await Promise.all(season6tracks.map(async (track) => {
-    let page = await configureTheBrowser(track);
+    let page = await configureTheBrowser(browser, track);
     let leaderboard =  await getLeaderboardJSON(page);
     await page.close();
     return leaderboard;
   }));
-  let page2 = await referenceLapTimes();
-  let reftimes =  await getreftimes(page2);
-  await page2.close()
+  let page = await referenceLapTimes(browser);
+  let reftimes =  await getreftimes(page);
+  await page.close()
+  await browser.close()
   // const ref_times = await Promise.all(season6tracks.map(async (track) => {
     
   // }));

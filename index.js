@@ -138,7 +138,9 @@ async function updateReferenceTimes(auth, reference_times) {
 async function configureTheBrowser(track) {
   let learderboardurl = `https://www.simracingalliance.com/leaderboards/hot_lap/${track}/?season=6`
   console.log(learderboardurl);
-  const browser = await puppeteer.launch();
+  const browser = await puppeteer.launch({
+    args: ["--no-sandbox", "--disable-setuid-sandbox"]
+  });
   const page = await browser.newPage();
   await page.goto(learderboardurl, { waitUntil: "load", timeout: 0});
   return page;

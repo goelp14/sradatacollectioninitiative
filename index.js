@@ -268,7 +268,7 @@ async function getreftimes(page) {
 
 app.get("/price", async (req, res) => {
   let season6tracks = ['Barcelona', 'Brands_Hatch', 'Imola/wet', 'Misano', 'Mount_Panorama', 'Oulton_Park', 'Silverstone/wet', 'Zolder'];
-  browser = launchBrowser();
+  browser = await launchBrowser();
   const track_leaderboards = await Promise.all(season6tracks.map(async (track) => {
     let page = await configureTheBrowser(browser, track);
     let leaderboard =  await getLeaderboardJSON(page);

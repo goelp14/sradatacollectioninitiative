@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-const port = 8080;
+const port = 3000;
 const puppeteer = require('puppeteer');
 const domainToASCII = require("url");
 const dotenv  = require("dotenv");
@@ -292,6 +292,6 @@ app.get("/price", async (req, res) => {
   res.send(results);
 });
 
-app.listen(port, () => {
+app.listen(port || 8080, () => {
   console.log(`Example app listening at https://sradatacollectioninitiative.herokuapp.com:${port}`);
 });

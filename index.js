@@ -268,10 +268,13 @@ app.get("/price", async (req, res) => {
   let season6tracks = ['Barcelona', 'Brands_Hatch', 'Imola/wet', 'Misano', 'Mount_Panorama', 'Oulton_Park', 'Silverstone/wet', 'Zolder'];
   const track_leaderboards = await Promise.all(season6tracks.map(async (track) => {
     let page = await configureTheBrowser(track);
-    return await getLeaderboardJSON(page);
+    let leaderboard =  await getLeaderboardJSON(page);
+    await page.close();
+    return leaderboard;
   }));
   let page2 = await referenceLapTimes();
   let reftimes =  await getreftimes(page2);
+  await page2.close()
   // const ref_times = await Promise.all(season6tracks.map(async (track) => {
     
   // }));

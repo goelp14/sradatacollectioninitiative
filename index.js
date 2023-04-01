@@ -121,7 +121,7 @@ async function updateReferenceTimes(auth, reference_times) {
   };
   try {
     const result = await sheets.spreadsheets.values.update({
-      "spreadsheetId": spreadsheetId,
+      "spreadsheetId": process.env.GOOGLE_SPREADSHEET_ID,
       "range": 'Reference Times!A2:N23',
       "resource": resource,
       resource,

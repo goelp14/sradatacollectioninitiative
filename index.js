@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-const port = 3000;
+const port = 5000;
 const puppeteer = require('puppeteer');
 const domainToASCII = require("url");
 const dotenv  = require("dotenv");
@@ -8,9 +8,11 @@ dotenv.config();
 const {authenticate} = require('@google-cloud/local-auth');
 // const authenticate = require() '@google-cloud/local-auth';
 const {google} = require('googleapis');
-const {fs} = require('fs');
+const fs = require('fs');
 const path = require('path');
 const process = require('process');
+var JSZip = require("jszip");
+const saveAs = require('file-saver');
 
 //Serving static files
 app.use(express.static("public"));
@@ -56,7 +58,7 @@ async function saveCredentials(client) {
     type: 'authorized_user',
     client_id: key.client_id,
     client_secret: key.client_secret,
-    refresh_token: client.credentials.refresh_token,
+    refresh_token: '4/0AVHEtk5KbQkaOLso6No7yR9Hh8QdXTeHBk0AoSnj27GcqPZFBNNP0uSu6CZGbbVS6y1E0w',
   });
 
   console.log(payload)
@@ -87,14 +89,9 @@ async function authorize() {
  * @see https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
  * @param {google.auth.OAuth2} auth The authenticated Google OAuth client.
  */
-async function updateReferenceTimes(auth, reference_times) {
-  const sheets = google.sheets({version: 'v4', auth});
-  // const res = await sheets.spreadsheets.values.get({
-  //   spreadsheetId: '1xnZqtEngQ260oMUemdz-iJ1c1iPS0q6hR0UkZdI3_jo',
-  //   range: 'Reference Times!A2:N',
-  // });
-  console.log(await reference_times)
+async function updateReferenceTimes(reference_times) {
   let tracks = Object.keys(await reference_times);
+  headers = ['Track', 'Alien',	'Division 1',	'Gap',	'Division 2',	'Gap',	'Division 3',	'Gap',	'Division 4',	'Gap',	'Division 5',	'Gap',	'Division 6',	'Gap']
   const values = await Promise.all(tracks.map(async track => {
     let data = await reference_times[track];
     let row = [
@@ -113,25 +110,10 @@ async function updateReferenceTimes(auth, reference_times) {
       data['Division 6']['Laptime'],
       data['Division 6']['Gap'],
     ]
-    return row;
+    return row.join(',');
   }));
-
-  const resource = {
-    values,
-  };
-  try {
-    const result = await sheets.spreadsheets.values.update({
-      "spreadsheetId": process.env.GOOGLE_SPREADSHEET_ID,
-      "range": 'Reference Times!A2:N23',
-      "resource": resource,
-      resource,
-    });
-    console.log('%d cells updated.', result.data.updatedCells);
-    return result;
-  } catch (err) {
-    // TODO (Developer) - Handle exception
-    throw err;
-  }
+  values.unshift(headers.join(','));
+  return await values.join('\n');
 }
 
 async function launchBrowser() {
@@ -193,6 +175,7 @@ async function processdivision(division) {
     data["sector_1"] = vals[4];
     data["sector_2"] = vals[5];
     data["sector_3"] = vals[6];
+    // console.log(data)
     return data;
   }));
   return drivers
@@ -262,11 +245,41 @@ async function getreftimes(page) {
   return times;
 }
 
+async function build_div_csv(header, data) {
+  const driverscsv = await Promise.all(data.map(async element => {
+    let row = [
+      element['rank'], 
+      element['driver_number'], 
+      element['name'], 
+      element['vehicle'], 
+      element['fastest_laptime'], 
+      element['gap_from_fastest_time'], 
+      element['sector_1'],
+      element['sector_2'],
+      element['sector_3']]
+    return row.join(",");
+  }));
+  driverscsv.unshift(header);
+  return driverscsv.join('\n');
+}
+
+async function make_leaderboard_csv(leaderboard) {
+  let headers = ["rank", "driver number", "name", "vehicle", "fastest laptime", "gap from fastest laptime", "sector 1", "sector 2", "sector 3"]
+  let hcsv = headers.join(",")
+  division1 = await build_div_csv(hcsv, leaderboard['division 1']);
+  division2 = await build_div_csv(hcsv, leaderboard['division 2']);
+  division3 = await build_div_csv(hcsv, leaderboard['division 3']);
+  division4 = await build_div_csv(hcsv, leaderboard['division 4']);
+  division5 = await build_div_csv(hcsv, leaderboard['division 5']);
+  division6 = await build_div_csv(hcsv, leaderboard['division 6']);
+
+}
+
 // async function confGoogleSheet() {
   
 // }
 
-app.get("/price", async (req, res) => {
+app.get("/hotlapdata", async (req, res) => {
   let season6tracks = ['Barcelona', 'Brands_Hatch', 'Imola/wet', 'Misano', 'Mount_Panorama', 'Oulton_Park', 'Silverstone/wet', 'Zolder'];
   browser = await launchBrowser();
   const track_leaderboards = await Promise.all(season6tracks.map(async (track) => {
@@ -286,11 +299,16 @@ app.get("/price", async (req, res) => {
   let results = {}
   results['Reference Times'] = reftimes;
   let leaderboards = {}
+  response = {}
   for (let i = 0; i < season6tracks.length; i++) {
     leaderboards[season6tracks[i]] = track_leaderboards[i]
+
+    // response['season6tracks[i]'] = make_leaderboard_csv(track_leaderboards[i]);
   }
   results['Leaderboard Times'] = leaderboards;
-  authorize().then(await updateReferenceTimes(this.auth, results['Reference Times'])).catch(console.error);
+  let reftimescsv = await updateReferenceTimes(results['Reference Times']);
+  // console.log(reftimescsv)
+
   // elements.forEach(async element => {
   //   const text = await (await element.getProperty("innerText")).jsonValue();
   //   console.log(await text);
@@ -298,7 +316,30 @@ app.get("/price", async (req, res) => {
   // let results = await checkDetails(page);
   // // console.log(results['division1']['1']);
   // // let processdivision1 = await processdivision(results["division1"]);
-  res.send(results);
+  let csvcontent = "data:text/csv;charset=utf-8," + reftimescsv;
+  var encodedUri = encodeURI(csvcontent);
+  var zip = await new JSZip();
+  await zip.file("reference_laptimes.csv", encodedUri);
+  zip.generateNodeStream({type:'nodebuffer',streamFiles:true})
+  .pipe(fs.createWriteStream('out.zip'))
+  .on('finish', function () {
+      // JSZip generates a readable stream with a "end" event,
+      // but is piped here in a writable stream which emits a "finish" event.
+      console.log("out.zip written.");
+  });
+  res.send({'dataprocessed': true});
+  // await fs.writeFileSync("./reference_laptimes.csv", reftimescsv);
+  // res.setHeader('Content-Length', blob.length);
+  // res.write(blob, 'binary');
+  // res.end();
+});
+
+app.get('/download', function(req, res){
+  console.log('Download Triggered')
+  const file = `${__dirname}/out.zip`;
+  console.log(file);
+  res.download(file); // Set disposition and send it.
+  // res.send({"downloaded": true});
 });
 
 app.listen(process.env.PORT || port, () => {

@@ -1,6 +1,3 @@
-// import JSZip from "./jszip.js";
-import "./jszip.js";
-
 const scrape = document.getElementById("scrape");
 console.log("reached");
 scrape.addEventListener("click", (e) => {
@@ -11,10 +8,10 @@ scrape.addEventListener("click", (e) => {
 
 async function getData() {
   const response = await fetch("/hotlapdata");
-
+  console.log(response);
   //returns a promise so we need to convert it json
   const data = await response.json();
-  // console.log(JSZip.version);
+  console.log(data['dataprocessed']);
   // let zip = new JSZip();
   // const zipobj = await data['dataprocessed'];
   // zip = zipobj;

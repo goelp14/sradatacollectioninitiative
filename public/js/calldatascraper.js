@@ -4,7 +4,10 @@ scrape.addEventListener("click", (e) => {
   e.preventDefault();
   console.log("clicked");
   const dataprocessed = getData();
-  download();
+  if (dataprocessed['dataprocessed']) {
+    download();
+  }
+  
 });
 
 async function getData() {
@@ -20,16 +23,6 @@ async function getData() {
   //   saveAs(blob, "hotlap_data.zip");                          // 2) trigger the download
   // });
   return data;
-
-async function download(){
-  console.log('downloading file');
-  // let url = window.location.host + '/download';
-  // console.log(url);
-  // window.open(url);
-  await fetch("/download");
-  const result = await response.json();
-  console.log(result)
-}
   // Creating a Blob for having a csv file format
   // and passing the data with type
 //  let csvcontent = "data:text/csv;charset=utf-8," + data['reftimes'];
@@ -41,4 +34,14 @@ async function download(){
 //   document.body.appendChild(link); // Required for FF
 
 // link.click(); // This will download the data file named "my_data.csv".
+}
+
+async function download(){
+  console.log('downloading file');
+  // let url = window.location.host + '/download';
+  // console.log(url);
+  // window.open(url);
+  await fetch("/download");
+  const result = await response.json();
+  console.log(result)
 }

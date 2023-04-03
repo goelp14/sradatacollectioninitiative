@@ -13,7 +13,7 @@ scrape.addEventListener("click", async (e) => {
 });
 
 async function getData() {
-  const response = await fetch("/hotlapdata");
+  const response = await fetch("http://localhost:3000/hotlapdata");
   console.log(response);
   //returns a promise so we need to convert it json
   const data = await response.json();

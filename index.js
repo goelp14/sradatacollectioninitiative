@@ -5,12 +5,9 @@ const puppeteer = require('puppeteer');
 const domainToASCII = require("url");
 const dotenv  = require("dotenv");
 dotenv.config();
-const {google} = require('googleapis');
 const fs = require('fs');
-const path = require('path');
 const process = require('process');
 var JSZip = require("jszip");
-const saveAs = require('file-saver');
 
 //Serving static files
 process.setMaxListeners(Infinity)
@@ -46,6 +43,7 @@ async function updateReferenceTimes(reference_times) {
 }
 
 async function launchBrowser() {
+  console.log("launching browser")
   const browser = await puppeteer.launch({
     args: ["--no-sandbox", "--disable-setuid-sandbox"]
   });

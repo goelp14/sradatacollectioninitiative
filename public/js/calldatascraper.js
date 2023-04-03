@@ -46,7 +46,7 @@ async function download(){
   console.log('downloading file');
   var T = document.getElementById("status");
   let url = window.location.host + '/download';
-  T.innerHTML = `<a href='http://${url}'>Download Hotlap Data!</a>`
+  T.innerHTML = `<a href='https://${url}'>Download Hotlap Data!</a>`
   // let url = window.location.host + '/download';
   // console.log(url);
   // window.open(url);

@@ -5,8 +5,6 @@ const puppeteer = require('puppeteer');
 const domainToASCII = require("url");
 const dotenv  = require("dotenv");
 dotenv.config();
-const {authenticate} = require('@google-cloud/local-auth');
-// const authenticate = require() '@google-cloud/local-auth';
 const {google} = require('googleapis');
 const fs = require('fs');
 const path = require('path');
@@ -19,77 +17,7 @@ process.setMaxListeners(Infinity)
 app.use(express.static("public"));
 const url =
   "https://www.simracingalliance.com/leaderboards/hot_lap/barcelona/?season=6";
-var CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
-var API_KEY = process.env.GOOGLE_API_KEY;
-var spreadsheetId = process.env.GOOGLE_SPREADSHEET_ID;
-  // If modifying these scopes, delete token.json.
-const SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly'];
-// The file token.json stores the user's access and refresh tokens, and is
-// created automatically when the authorization flow completes for the first
-// time.
-const TOKEN_PATH = path.join(process.cwd(), 'token.json');
-const CREDENTIALS_PATH = path.join(process.cwd(), 'google-credentials.json');
 
-/**
- * Reads previously authorized credentials from the save file.
- *
- * @return {Promise<OAuth2Client|null>}
- */
-async function loadSavedCredentialsIfExist() {
-  try {
-    const content = await fs.readFile(TOKEN_PATH);
-    const credentials = JSON.parse(content);
-    return google.auth.fromJSON(credentials);
-  } catch (err) {
-    return null;
-  }
-}
-
-/**
- * Serializes credentials to a file comptible with GoogleAUth.fromJSON.
- *
- * @param {OAuth2Client} client
- * @return {Promise<void>}
- */
-async function saveCredentials(client) {
-  const content = await fs.readFile(CREDENTIALS_PATH);
-  const keys = JSON.parse(content);
-  const key = keys.installed || keys.web;
-  const payload = JSON.stringify({
-    type: 'authorized_user',
-    client_id: key.client_id,
-    client_secret: key.client_secret,
-    refresh_token: '4/0AVHEtk5KbQkaOLso6No7yR9Hh8QdXTeHBk0AoSnj27GcqPZFBNNP0uSu6CZGbbVS6y1E0w',
-  });
-
-  console.log(payload)
-  await fs.writeFile(TOKEN_PATH, payload);
-}
-
-/**
- * Load or request or authorization to call APIs.
- *
- */
-async function authorize() {
-  let client = await loadSavedCredentialsIfExist();
-  if (client) {
-    return client;
-  }
-  client = await authenticate({
-    scopes: SCOPES,
-    keyfilePath: CREDENTIALS_PATH,
-  });
-  if (client.credentials) {
-    await saveCredentials(client);
-  }
-  return client;
-}
-
-/**
- * Prints the names and majors of students in a sample spreadsheet:
- * @see https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
- * @param {google.auth.OAuth2} auth The authenticated Google OAuth client.
- */
 async function updateReferenceTimes(reference_times) {
   let tracks = Object.keys(await reference_times);
   headers = ['Track', 'Alien',	'Division 1',	'Gap',	'Division 2',	'Gap',	'Division 3',	'Gap',	'Division 4',	'Gap',	'Division 5',	'Gap',	'Division 6',	'Gap']

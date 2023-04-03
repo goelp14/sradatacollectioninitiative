@@ -42,6 +42,6 @@ async function download(){
   // console.log(url);
   // window.open(url);
   await fetch("/download");
-  const result = await response.json();
-  console.log(result)
+  // const result = await response.json();
+  // console.log(result)
 }

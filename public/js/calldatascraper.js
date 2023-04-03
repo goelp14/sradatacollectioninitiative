@@ -8,9 +8,7 @@ scrape.addEventListener("click", async (e) => {
   T.style.display = "block";  // <-- Set it to block
   const dataprocessed = await getData();
   console.log(dataprocessed['dataprocessed'])
-  if (dataprocessed['dataprocessed'] == true) {
-    await download();
-  }
+  await download();
   
 });
 
@@ -46,7 +44,7 @@ async function download(){
   console.log('downloading file');
   var T = document.getElementById("status");
   let url = window.location.host + '/download';
-  T.innerHTML = `<a href='https://${url}'>Download Hotlap Data!</a>`
+  T.innerHTML = `<a href='https://${url}'>Download Hotlap Data!</a><p>Note this is pretty jank so it might not always work.</p>`
   // let url = window.location.host + '/download';
   // console.log(url);
   // window.open(url);

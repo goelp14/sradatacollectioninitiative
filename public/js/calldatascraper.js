@@ -1,11 +1,15 @@
 const scrape = document.getElementById("scrape");
 console.log("reached");
-scrape.addEventListener("click", (e) => {
+scrape.addEventListener("click", async (e) => {
   e.preventDefault();
   console.log("clicked");
-  const dataprocessed = getData();
-  if (dataprocessed['dataprocessed']) {
-    download();
+  var T = document.getElementById("status");
+  T.innerHTML = "<p>Preparing Data...</p>"
+  T.style.display = "block";  // <-- Set it to block
+  const dataprocessed = await getData();
+  console.log(dataprocessed['dataprocessed'])
+  if (dataprocessed['dataprocessed'] == true) {
+    await download();
   }
   
 });
@@ -16,6 +20,8 @@ async function getData() {
   //returns a promise so we need to convert it json
   const data = await response.json();
   console.log(data['dataprocessed']);
+  var T = document.getElementById("status");
+  T.innerHTML = "<p>Finished Collecting Data. Preparing Download Link...</p>"
   // let zip = new JSZip();
   // const zipobj = await data['dataprocessed'];
   // zip = zipobj;
@@ -38,10 +44,13 @@ async function getData() {
 
 async function download(){
   console.log('downloading file');
+  var T = document.getElementById("status");
+  let url = window.location.host + '/download';
+  T.innerHTML = `<a href='http://${url}'>Download Hotlap Data!</a>`
   // let url = window.location.host + '/download';
   // console.log(url);
   // window.open(url);
-  await fetch("/download");
+  // await fetch("/download");
   // const result = await response.json();
   // console.log(result)
 }

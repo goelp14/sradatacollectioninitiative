@@ -273,6 +273,8 @@ async function make_leaderboard_csv(leaderboard) {
   division5 = await build_div_csv(hcsv, leaderboard['division 5']);
   division6 = await build_div_csv(hcsv, leaderboard['division 6']);
 
+  return [division1, division2, division3, division4, division5, division6]
+
 }
 
 // async function confGoogleSheet() {
@@ -280,7 +282,7 @@ async function make_leaderboard_csv(leaderboard) {
 // }
 
 app.get("/hotlapdata", async (req, res) => {
-  let season6tracks = ['Barcelona', 'Brands_Hatch', 'Imola/wet', 'Misano', 'Mount_Panorama', 'Oulton_Park', 'Silverstone/wet', 'Zolder'];
+  let season6tracks = ['Barcelona', 'Brands_Hatch', 'Imola/Wet', 'Misano', 'Mount_Panorama', 'Oulton_Park', 'Silverstone/Wet', 'Zolder'];
   browser = await launchBrowser();
   const track_leaderboards = await Promise.all(season6tracks.map(async (track) => {
     let page = await configureTheBrowser(browser, track);
@@ -299,11 +301,10 @@ app.get("/hotlapdata", async (req, res) => {
   let results = {}
   results['Reference Times'] = reftimes;
   let leaderboards = {}
-  response = {}
+  let response = {}
   for (let i = 0; i < season6tracks.length; i++) {
     leaderboards[season6tracks[i]] = track_leaderboards[i]
-
-    // response['season6tracks[i]'] = make_leaderboard_csv(track_leaderboards[i]);
+    response[season6tracks[i]] = await make_leaderboard_csv(track_leaderboards[i]);
   }
   results['Leaderboard Times'] = leaderboards;
   let reftimescsv = await updateReferenceTimes(results['Reference Times']);
@@ -316,16 +317,26 @@ app.get("/hotlapdata", async (req, res) => {
   // let results = await checkDetails(page);
   // // console.log(results['division1']['1']);
   // // let processdivision1 = await processdivision(results["division1"]);
-  let csvcontent = "data:text/csv;charset=utf-8," + reftimescsv;
-  var encodedUri = encodeURI(csvcontent);
+  // let csvcontent = "data:text/csv;charset=utf-8," + reftimescsv;
+  // var encodedUri = encodeURI(csvcontent);
   var zip = await new JSZip();
-  await zip.file("reference_laptimes.csv", encodedUri);
+  zip.file("reference_laptimes.csv", reftimescsv);
+  season6tracks.forEach(track => {
+    let csvs = response[track];
+    zip.file(`${track}/Division1Stats.csv`, csvs[0]);
+    zip.file(`${track}/Division2Stats.csv`, csvs[1]);
+    zip.file(`${track}/Division3Stats.csv`, csvs[2]);
+    zip.file(`${track}/Division4Stats.csv`, csvs[3]);
+    zip.file(`${track}/Division5Stats.csv`, csvs[4]);
+    zip.file(`${track}/Division6Stats.csv`, csvs[5]);
+  });
+
   zip.generateNodeStream({type:'nodebuffer',streamFiles:true})
-  .pipe(fs.createWriteStream('out.zip'))
+  .pipe(fs.createWriteStream('hotlapdata.zip'))
   .on('finish', function () {
       // JSZip generates a readable stream with a "end" event,
       // but is piped here in a writable stream which emits a "finish" event.
-      console.log("out.zip written.");
+      console.log("hotlapdata.zip written.");
   });
   res.send({'dataprocessed': true});
   // await fs.writeFileSync("./reference_laptimes.csv", reftimescsv);
@@ -336,7 +347,7 @@ app.get("/hotlapdata", async (req, res) => {
 
 app.get('/download', function(req, res){
   console.log('Download Triggered')
-  const file = `${__dirname}/out.zip`;
+  const file = `${__dirname}/hotlapdata.zip`;
   console.log(file);
   res.download(file); // Set disposition and send it.
   // res.send({"downloaded": true});

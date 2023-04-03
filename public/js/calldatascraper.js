@@ -13,7 +13,7 @@ scrape.addEventListener("click", async (e) => {
 });
 
 async function getData() {
-  const response = await fetch("http://localhost:3000/hotlapdata");
+  const response = await fetch("/hotlapdata");
   console.log(response);
   //returns a promise so we need to convert it json
   const data = await response.json();
@@ -44,7 +44,7 @@ async function download(){
   console.log('downloading file');
   var T = document.getElementById("status");
   let url = window.location.host + '/download';
-  T.innerHTML = `<a href='https://${url}'>Download Hotlap Data!</a><p>Note this is pretty jank so it might not always work.</p>`
+  T.innerHTML = `<a href='http://localhost:5000/download'>Download Hotlap Data!</a><p>Note this is pretty jank so it might not always work.</p>`
   // let url = window.location.host + '/download';
   // console.log(url);
   // window.open(url);

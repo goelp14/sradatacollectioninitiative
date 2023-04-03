@@ -15,6 +15,7 @@ var JSZip = require("jszip");
 const saveAs = require('file-saver');
 
 //Serving static files
+process.setMaxListeners(Infinity)
 app.use(express.static("public"));
 const url =
   "https://www.simracingalliance.com/leaderboards/hot_lap/barcelona/?season=6";

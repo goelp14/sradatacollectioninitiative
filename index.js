@@ -283,17 +283,20 @@ async function make_leaderboard_csv(leaderboard) {
 
 app.get("/hotlapdata", async (req, res) => {
   let season6tracks = ['Barcelona', 'Brands_Hatch', 'Imola/Wet', 'Misano', 'Mount_Panorama', 'Oulton_Park', 'Silverstone/Wet', 'Zolder'];
-  browser = await launchBrowser();
+  
   const track_leaderboards = await Promise.all(season6tracks.map(async (track) => {
+    let browser = await launchBrowser();
     let page = await configureTheBrowser(browser, track);
     let leaderboard =  await getLeaderboardJSON(page);
     await page.close();
+    await browser.close();
     return leaderboard;
   }));
-  let page = await referenceLapTimes(browser);
+  let browser2 = await launchBrowser();
+  let page = await referenceLapTimes(browser2);
   let reftimes =  await getreftimes(page);
   await page.close()
-  await browser.close()
+  await browser2.close()
   // const ref_times = await Promise.all(season6tracks.map(async (track) => {
     
   // }));

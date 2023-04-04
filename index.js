@@ -179,7 +179,7 @@ async function build_div_csv(header, data) {
       element['driver_number'], 
       element['name'], 
       element['vehicle'], 
-      element['fastest_laptime'], 
+      element['fastest_lap_time'], 
       element['gap_from_fastest_time'], 
       element['sector_1'],
       element['sector_2'],

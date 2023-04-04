@@ -209,7 +209,7 @@ async function make_leaderboard_csv(leaderboard) {
 // }
 
 app.get("/hotlapdata", async (req, res) => {
-  let season6tracks = ['Barcelona', 'Brands_Hatch', 'Imola/Wet', 'Misano', 'Mount_Panorama', 'Oulton_Park', 'Silverstone/Wet', 'Zolder'];
+  let season6tracks = ['Barcelona', 'Brands_Hatch', 'Imola/wet', 'Misano', 'Mount_Panorama', 'Oulton_Park', 'Silverstone/wet', 'Zolder'];
   let browser = await launchBrowser();
   const track_leaderboards = await Promise.all(season6tracks.map(async (track) => {
     let page = await configureTheBrowser(browser, track);
@@ -233,6 +233,9 @@ app.get("/hotlapdata", async (req, res) => {
   let response = {}
   for (let i = 0; i < season6tracks.length; i++) {
     leaderboards[season6tracks[i]] = track_leaderboards[i]
+    if (season6tracks[i] == 'Silverstone/Wet') {
+      console.log(track_leaderboards[i]);
+    }
     response[season6tracks[i]] = await make_leaderboard_csv(track_leaderboards[i]);
   }
   results['Leaderboard Times'] = leaderboards;
@@ -252,6 +255,9 @@ app.get("/hotlapdata", async (req, res) => {
   zip.file("reference_laptimes.csv", reftimescsv);
   season6tracks.forEach(track => {
     let csvs = response[track];
+    if (track == 'Silverstone/Wet') {
+      console.log(csvs)
+    }
     zip.file(`${track}/Division1Stats.csv`, csvs[0]);
     zip.file(`${track}/Division2Stats.csv`, csvs[1]);
     zip.file(`${track}/Division3Stats.csv`, csvs[2]);
